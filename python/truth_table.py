@@ -139,15 +139,22 @@ def simplify_truth_table( values : list[str] ) -> list[str]:
 	return [ simplify_boolean_operation(value) for value in values ]
 
 def simplify_multi_dim_truth_table( value : list[list[str]] ) -> list[list[str]]:
-	output = simplify_truth_table( np.array(value).flatten().tolist() )
-	output = np.array(output)
-	output = output.reshape( np.shape(value) ).tolist()
+	print( np.shape(value) )
+	output : list[ str ] = simplify_truth_table( np.array(value).flatten().tolist() )
+	#output : list[str] = [ v.replace('NOT', 'NAND') for v in output ]
+	output = np.reshape( output, np.shape(value) ).tolist()
 	return output
 
 def calculate_operations( value : str ) -> int:
-	OPS = ['AND', 'NOT', 'OR', 'NAND', 'XOR', 'XNOR', 'NOR']
+	OPS = ['AND', 'OR', 'NOT', 'XOR', 'XNOR', 'NOR']
+	# for operation in OPS:
+	# 	print( operation, value.count(operation), value )
 	total : int = 0
-	for item in OPS: total += value.count(item)
+	for item in OPS:
+		index : int = str.find(value, item)
+		while index != -1:
+			total += 1
+			index : int = value.find(item, index + len(item))
 	return total
 
 def run_test() -> None:
@@ -160,7 +167,6 @@ def run_test() -> None:
 		'NOT(NOT(A) AND NOT(B) AND NOT(C))' : 'A OR B OR C',
 		'NOT(NOT(A) AND B)' : 'A OR NOT(B)'
 	}
-
 	for inp, exp in TEST_BRANCHES.items():
 		try: out : str = simplify_boolean_operation( inp )
 		except: out : str = 'failed'
@@ -168,26 +174,26 @@ def run_test() -> None:
 			print('Condition Passed: ', inp, '->', out)
 		else:
 			print('Condition Failed:', inp, 'GOT', out, 'EXPECTING', exp )
-
 	for bulk, simple in TEST_BRANCHES.items():
 		print('OPS:', calculate_operations( bulk ), '->', calculate_operations( simple ))
+	print('TOTAL OPS:', calculate_operations( ' '.join(list(TEST_BRANCHES.keys())) ), '->', calculate_operations( ' '.join(list(TEST_BRANCHES.values())) ) )
 
 if __name__ == '__main__':
-	# run_test()
+	run_test()
 
-	# test = truth_table_multi_output(['00', '01', '10', '11'], ['0100', '1001', '0010'])
-	# print( 'BEFORE SIMPLIFY: ', json.dumps(test, indent=4) )
-	# print( calculate_operations( str(test) ) )
-	# test = simplify_multi_dim_truth_table( test )
-	# print( 'AFTER SIMPLIFY: ', json.dumps(test, indent=4) )
-	# print( calculate_operations( str(test) ) )
+	test = truth_table_multi_output(['00', '01', '10', '11'], ['0100', '1001', '0010'])
+	print( 'BEFORE SIMPLIFY: ', json.dumps(test, indent=4) )
+	print( calculate_operations( str(test) ) )
+	test = simplify_multi_dim_truth_table( test )
+	print( 'AFTER SIMPLIFY: ', json.dumps(test, indent=4) )
+	print( calculate_operations( str(test) ) )
 
-	test1, mapped1 = truth_table_multi_output(['000', '001', '010', '011', '100', '101', '110', '111'], ['00100111'])
-	print(mapped1)
-	print( 'BEFORE SIMPLIFY: ', json.dumps(test1, indent=4) )
-	print( calculate_operations( str(test1) ) )
-	test2 = simplify_multi_dim_truth_table( test1 )
-	print( 'AFTER SIMPLIFY: ', json.dumps(test2, indent=4) )
-	print( calculate_operations( str(test2) ) )
+	# test1, mapped1 = truth_table_multi_output(['000', '001', '010', '011', '100', '101', '110', '111'], ['00100111'])
+	# print( json.dumps(mapped1, indent=4) )
+	# print( 'BEFORE SIMPLIFY: ', json.dumps(test1, indent=4) )
+	# print( calculate_operations( str(test1) ) )
+	# test2 = simplify_multi_dim_truth_table( test1 )
+	# print( 'AFTER SIMPLIFY: ', json.dumps(test2, indent=4) )
+	# print( calculate_operations( str(test2) ) )
 
 	pass
