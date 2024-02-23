@@ -72,7 +72,7 @@ def truth_table_multi_output( truth_table_rows : list[str], outputs : list[str] 
 		for index, char in enumerate(output):
 			row : str = truth_table_rows[index]
 			expr = cache.get(row)
-			if char == '0': expr='' #expr = 'NOT(' + expr + ')'
+			if char == '0': expr = 'NOT(' + expr + ')'
 			compiled.append(expr)
 		completed.append( compiled )
 	return completed, cache
@@ -160,7 +160,7 @@ def simplify_multi_dim_truth_table( value : list[list[str]] ) -> list[list[str]]
 	'''
 	# print( np.shape(value) )
 	output : list[ str ] = simplify_truth_table( np.array(value).flatten().tolist() )
-	output : list[ str ] = [' OR '.join(output)]
+	output : list[ str ] = [' AND '.join(output)]
 	#output : list[str] = [ v.replace('NOT', 'NAND') for v in output ]
 	output = np.reshape( output, np.shape(value)[-2] ).tolist()
 	return output
