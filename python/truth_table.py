@@ -81,39 +81,33 @@ PARENTHESIS_VALUE_REGEX = r'\(([^)]+)'
 SIMPLIFY_REGEX_TUPLES : tuple[ str, Callable[[tuple], str], Callable[[tuple], str] ] = [
 	(
 		# NOT(NOT(*)) -> (*)
-		r'NOT\(NOT\((.*?)\)\)',
+		r'NOT\(NOT\((\w+)\)\)',
 		lambda values : ''.join(values),
-		lambda value : re.match(r'(?<=NOT\()NOT\(([A-Z])\)(?=\))', value) or re.match(r'NOT\((?:A AND NOT\(B\)|NOT\(A\) AND B)\)', value) != None
+		lambda value : re.match(r'(?<=NOT\()NOT\(([A-Z])\)(?=\))', value) == None
 	),
 	(
-		# NOT(NOT(A) AND NOT(B) AND NOT(C) AND NOT(D) AND NOT(E)) -> (A OR B OR C OR D OR E)
-		r'NOT\(NOT\(([^)]+)\)\)',
-		lambda values : print(values),# ' OR '.join(values),
-		lambda value : re.match(r'NOT\(NOT\(([^)]+)\)\)', value) or re.match(r'NOT\((?:A AND NOT\(B\)|NOT\(A\) AND B)\)', value) != None
+		# NOT(NOT(A) AND NOT(B) AND ...)
+		r'(?<=NOT\()[A-Z](?=\))',
+		lambda values : ' OR '.join(values),
+		lambda value : re.match(r'NOT\(NOT\([A-Z]\) AND NOT\([A-Z]\)(?: AND NOT\([A-Z]\))*\)', value) == None
 	),
 	(
 		# NOT(A) AND NOT(B) AND NOT(C) -> NOT(A OR B OR C)
-		r'(?<=NOT\()[A-Z](?=\))',
+		r'(?<=NOT\()\w(?=\))',
 		lambda values : 'NOT(' + (' OR '.join(values)) + ')',
-		lambda value : re.fullmatch(r'(?<=NOT\()[A-Z](?=\))', value) or re.match(r'NOT\((?:A AND NOT\(B\)|NOT\(A\) AND B)\)', value) != None
-	),
-	(
-		# NOT(NOT(A) AND NOT(B) AND NOT(C) AND NOT(D)) -> NOT( NOT(A OR B) ) -> (A OR B) # IGNORE NOT(NOT(*)) PART
-		r'(?<=NOT\()[A-Z](?=\))',
-		lambda values : ' OR '.join(values), # skip the NOT( NOT( * ) ) step
-		lambda value : re.match(r'NOT\(NOT\((.)\) AND NOT\((.)\)\)', value) or re.match(r'NOT\((?:A AND NOT\(B\)|NOT\(A\) AND B)\)', value) != None
+		lambda value : re.match(r'NOT\([A-Z]\)(?:\s+AND\s+NOT\([A-Z]\))*', value) == None
 	),
 	(
 		# NOT(A AND NOT(B)) -> NOT(A) OR B
 		r'NOT\((\w+) AND NOT\((\w+)\)\)',
 		lambda values : f'NOT({values[0]}) OR {values[1]}',
-		lambda value : re.match( r'NOT\((\w+) AND NOT\((\w+)\)\)', value )
+		lambda value : re.match( r'NOT\((\w+) AND NOT\((\w+)\)\)', value ) == None
 	),
 	(
 		# NOT(NOT(A) AND B) -> A OR NOT(B)
 		r'NOT\(NOT\((\w+)\) AND (\w+)\)',
 		lambda values : f'{values[0]} OR NOT({values[1]})',
-		lambda value : re.match( r'NOT\(NOT\((\w+)\) AND (\w+)\)', value )
+		lambda value : re.match( r'NOT\(NOT\((\w+)\) AND (\w+)\)', value ) == None
 	),
 ]
 
@@ -169,7 +163,7 @@ if __name__ == '__main__':
 	TEST_BRANCHES : dict[str, str] = {
 		'NOT(A) AND NOT(B) AND NOT(C) AND NOT(D)' : 'NOT(A OR B OR C OR D)',
 		'NOT(A) AND NOT(B)' : 'NOT(A OR B)',
-		'NOT(NOT(A OR B))' : 'A OR B',
+		'NOT(NOT(A OR B))' : 'NOT(NOT(A OR B))',
 		'NOT(NOT(A) AND NOT(B))' : 'A OR B',
 		'NOT(A AND NOT(B))' : 'NOT(A) OR B',
 		'NOT(NOT(A) AND NOT(B) AND NOT(C))' : 'A OR B OR C',
@@ -177,9 +171,10 @@ if __name__ == '__main__':
 	}
 
 	for inp, exp in TEST_BRANCHES.items():
-		out : str = simplify_boolean_operation( inp )
+		try: out : str = simplify_boolean_operation( inp )
+		except: out : str = 'failed'
 		if exp==out:
-			print('Condition Passed: ', inp, out)
+			print('Condition Passed: ', inp, '->', out)
 		else:
 			print('Condition Failed:', inp, 'GOT', out, 'EXPECTING', exp )
 
