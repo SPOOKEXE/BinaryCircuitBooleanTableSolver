@@ -1,5 +1,6 @@
 
 from __future__ import annotations
+from truth_table import precompute_truth_table
 
 class Component:
 	'''
@@ -13,20 +14,13 @@ class Component:
 
 	def __init__(self, bits : int) -> Component:
 		self.bits = bits
-		self.precompute_truth_table()
+		self.precompute_tt()
 
 	def logic_solve( self, binary : str ) -> str:
 		raise NotImplementedError
 
-	def precompute_truth_table( self ) -> None:
-		self.truth_table = dict()
-		total : int = 2 ** self.bits
-		total_bits = len(bin( total )[2:])
-		for counter in range( total ):
-			value : str = bin(counter)[2:]
-			padding : str = '0' * (total_bits - len(value) - 1)
-			binary : str = padding + value
-			self.truth_table[binary] = self.logic_solve( binary )
+	def precompute_tt( self ) -> None:
+		self.truth_table = precompute_truth_table( self.bits, self.logic_solve )
 
 	def calculate( self, binary : str ) -> str:
 		output : str = self.truth_table.get(binary)
