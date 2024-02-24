@@ -5,22 +5,21 @@ from truth_table import precompute_truth_table
 class Component:
 	'''
 	Individual inputs/outputs are separated by spaces.
-	[N] represents the total bits, [B] represents a single bit.
+	&N& represents the total bits, &B& represents a single bit.
 	'''
-	bits : int
-	inputs : str
-	outputs : str
+	in_bits : int
+	out_bits : int
 	truth_table : dict[str, str]
 
 	def __init__(self, bits : int) -> Component:
-		self.bits = bits
+		self.in_bits = bits
 		self.precompute_tt()
 
 	def logic_solve( self, binary : str ) -> str:
 		raise NotImplementedError
 
 	def precompute_tt( self ) -> None:
-		self.truth_table = precompute_truth_table( self.bits, self.logic_solve )
+		self.truth_table = precompute_truth_table( self.in_bits, self.out_bits, self.logic_solve )
 
 	def calculate( self, binary : str ) -> str:
 		output : str = self.truth_table.get(binary)
@@ -28,20 +27,16 @@ class Component:
 		return output
 
 class ANDComponent(Component):
-	bits : int = 1
-	inputs : str = "[N]"
-	outputs : str = "[B]"
-	cost : int = 1
+	in_bits : int = 1
+	out_bits : int = 1
 
 	def logic_solve( self, binary : str ) -> str:
 		if binary.find('0') == -1: return '1'
 		return '0'
 
 class ORComponent(Component):
-	bits : int = 1
-	inputs : str = "&N&"
-	outputs : str = "&B&"
-	cost : int = 1
+	in_bits : int = 1
+	out_bits : int = 1
 
 	def logic_solve( self, binary : str ) -> str:
 		if binary.find('1') != -1:
@@ -49,20 +44,16 @@ class ORComponent(Component):
 		return '0'
 
 class NORComponent(Component):
-	bits : int = 1
-	inputs : str = "&N&"
-	outputs : str = "&B&"
-	cost : int = 2
+	in_bits : int = 1
+	out_bits : int = 1
 
 	def logic_solve( self, binary : str ) -> str:
 		if binary.find('1') == -1: return '1'
 		return '0'
 
 class XORComponent(Component):
-	bits : int = 1
-	inputs : str = "&N&"
-	outputs : str = "&B&"
-	cost : int = 2
+	in_bits : int = 1
+	out_bits : int = 1
 
 	def logic_solve( self, binary : str ) -> str:
 		if binary.find('0') != -1 and binary.find('1') != -1:
@@ -70,10 +61,8 @@ class XORComponent(Component):
 		return '0'
 
 class NANDComponent(Component):
-	bits : int = 1
-	inputs : str = "&N&"
-	outputs : str = "&B&"
-	cost : int = 2
+	in_bits : int = 1
+	out_bits : int = 1
 
 	def logic_solve( self, binary : str ) -> str:
 		if binary == '1' * self.bits:
@@ -81,10 +70,8 @@ class NANDComponent(Component):
 		return '0'
 
 class XNORComponent(Component):
-	bits : int = 1
-	inputs : str = "&N&"
-	outputs : str = "&B&"
-	cost : int = 2
+	in_bits : int = 1
+	out_bits : int = 1
 
 	def logic_solve( self, binary : str ) -> str:
 		if binary == ('1' * self.bits) or binary == ('0' * self.bits):

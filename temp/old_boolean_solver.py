@@ -166,7 +166,7 @@ def simplify_multi_dim_truth_table( value : list[list[str]] ) -> list[list[str]]
 	return output
 
 def calculate_operations( value : str ) -> int:
-	OPS = ['AND', 'OR', 'NOT', 'XOR', 'XNOR', 'NOR']
+	OPS = ['AND', 'OR', 'NOT']
 	# for operation in OPS:
 	# 	print( operation, value.count(operation), value )
 	total : int = 0

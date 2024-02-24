@@ -5,11 +5,11 @@ def simplify_boolean_expression(expression):
 	# Remove white spaces for ease of processing
 	expression = expression.replace(" ", "")
 
-	# Helper function to apply De Morgan's laws
-	def apply_demorgans_laws(expr):
-		expr = expr.replace("~(~", "")
-		expr = expr.replace("~~", "")
-		return expr
+	# # Helper function to apply De Morgan's laws
+	# def apply_demorgans_laws(expr):
+	# 	expr = expr.replace("~(~", "")
+	# 	expr = expr.replace("~~", "")
+	# 	return expr
 
 	# Helper function to simplify double negations
 	def simplify_double_negations(expr):
@@ -93,15 +93,15 @@ def simplify_boolean_expression(expression):
 			return expression
 
 	# Apply simplification rules iteratively until the expression stops changing
-	print(expression)
+	# print(expression)
 	expression = apply_expansion(expression)
-	print(expression)
+	# print(expression)
 
 	prev_expr = None
 	while prev_expr != expression:
 		prev_expr = expression
 		expression = simplify_idempotent(expression)
-		expression = apply_demorgans_laws(expression)
+		# expression = apply_demorgans_laws(expression)
 		expression = simplify_double_negations(expression)
 		expression = apply_absorption_laws(expression)
 		expression = apply_identity_laws(expression)
@@ -111,11 +111,30 @@ def simplify_boolean_expression(expression):
 		expression = remove_parentheses(expression)
 		expression = apply_morgans_theorom(expression)
 		expression = expression.replace(' ', '')
-		print(expression)
+		# print(expression)
 	return expression
 
-# Example usage:
-expression = "~(A & B & ~(C) & ~(D) & E)"
-simplified_expression = simplify_boolean_expression(expression)
-print("Original expression:", expression)
-print("Simplified expression:", simplified_expression)
+def run_test() -> None:
+	TEST_BRANCHES : dict[str, str] = {
+		'(~A)&(~B)&(~C)&(~D)' : '~(A|B|C|D)',
+		'~(A) & ~(B)' : '~(A | B)',
+		'~(~(A | B))' : '~(~(A | B))',
+		'~(~(A) & ~(B))' : 'A | B',
+		'~(A & ~(B))' : '~(A) | B',
+		'~(~(A) & ~(B) & ~(C))' : 'A | B | C',
+		'~(~(A) & B)' : 'A | ~(B)'
+	}
+	for inp, exp in TEST_BRANCHES.items():
+		try:
+			out : str = simplify_boolean_expression( inp )
+		except:
+			out : str = 'failed'
+		print(inp, '->', out)
+		# if exp==out:
+		# 	print('Condition Passed: ', inp, '->', out)
+		# else:
+		# 	print('Condition Failed:', inp, 'GOT', out, 'EXPECTING', exp )
+
+if __name__ == '__main__':
+	run_test()
+	pass
